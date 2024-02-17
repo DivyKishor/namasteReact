@@ -1,6 +1,10 @@
+import UserClass from './UserClass';
+
 const Contact =() =>{
-    return (
+    return (<div>
         <div>Contact Us Page</div>
+        <UserClass name="Divy" location="Bihar"/>
+        </div>
     )
 };
 

@@ -1,12 +1,17 @@
-import RestaurantCard from "./RestaurantCard";
+import { Link } from "react-router-dom";
+import RestaurantCard, { withPromotedLabel } from "./RestaurantCard";
 import Shimmer from "./Shimmer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import UserContext from "../../utils/UserContext";
+
 
 const Body = () =>{
     const[listOfRestaurant, setListOfRestaurant] = useState([]);
     const[filteredListOfRestaurant, setFilteredListOfRestaurant] = useState([]);
 
     const [searchText, setSearchText] = useState("");
+
+    const RestaurantCardPromoted = withPromotedLabel(RestaurantCard);
 
     useEffect(()=>{
         fetchData();
@@ -24,25 +29,45 @@ const Body = () =>{
         setFilteredListOfRestaurant(json?.data?.cards[4]?.card?.card?.gridElements?.infoWithStyle?.restaurants);
     }
 
+    const {loggedInUser, setUserName} = useContext(UserContext);
+
     return (
         filteredListOfRestaurant.length === 0?<Shimmer/>:
         <div className="body">
-            <div className="search">
-                <input type="text" value={searchText} onChange={(e) =>{ setSearchText(e.target.value)}} />
-                <button onClick={()=>{
+            <div className="m-4">
+                <input className="rounded-lg border w-96 p-2" type="text" value={searchText} onChange={(e) =>{ setSearchText(e.target.value)}} />
+                <button className="ring-2 ring-offset-2 hover:bg-blue-400 bg-blue-500 text-white rounded-lg px-4 py-2 mx-2 shadow-sm" onClick={()=>{
                     const filteredRestaurant = listOfRestaurant.filter((res)=>{
-                        //search not working
-                        //console.log(res.info.name.toLowerCase().includes(searchText.toLowerCase()));
-                        res.info.name.toLowerCase().includes(searchText.toLowerCase());
+                        return res.info.name.toLowerCase().includes(searchText.toLowerCase());
                     });
                     //console.log(filteredRestaurant);
                     setFilteredListOfRestaurant(filteredRestaurant);
                 }}>Search</button>
+
+                <button className="ring-2 ring-slate-200 rounded-full px-4 py-2 mx-2 shadow-sm" onClick={()=>{
+                    const filteredRestaurant = listOfRestaurant.filter((res)=>{
+                        return res.info.avgRating >= 4.0;
+                    });
+                    //console.log(filteredRestaurant);
+                    setFilteredListOfRestaurant(filteredRestaurant);
+                }}>Rating 4.0+</button>
             </div>
-            <div className="res-container">
+            <div className="">
+                <label>Username</label>
+                <input
+                value={loggedInUser}
+                onChange={(e)=> setUserName(e.target.value)}
+                className="p-2 border border-black"
+                />
+            </div>
+            <div className="flex flex-wrap justify-center ">
             {filteredListOfRestaurant.map((res) => (
-            
-                <RestaurantCard key={res.info.id} data={res} />
+                
+                <Link key={res.info.id}  to={"/restaurants/"+ res.info.id}>
+                    {res.info.sla.deliveryTime <30 ?
+                    <RestaurantCardPromoted data={res}/> 
+                    :<RestaurantCard data={res} />}
+                </Link>
             ))}
             </div>
         </div>
